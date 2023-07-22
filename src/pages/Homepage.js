@@ -5,6 +5,11 @@ import axios from 'axios';
 function Homepage() {
     const [products, setProducts] = useState([]);
     const [user, setUser] = useState({});
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [alertMessage, setAlertMessage] = useState({});
+    const [validation, setValidation] = useState([]);
     const history = useHistory();
 
     const token = localStorage.getItem("token");
@@ -34,6 +39,53 @@ function Homepage() {
         });
     };
 
+    const updateProfileHandler = async (e) => {
+        e.preventDefault();
+
+        await axios
+        .put(`http://localhost:8000/api/users/${user.id}`, {name:user.name, email:user.email})
+        .then(() => {
+            setAlertMessage({
+                status : true,
+                message : 'Success update user',
+                alertType: 'alert alert-success',
+            })
+            history.push('/');
+        });
+    }
+
+    const updatePasswordHandler = async (e) => {
+        e.preventDefault();
+
+        if(newPassword !== confirmPassword){
+            setAlertMessage({
+                status : true,
+                message : 'Confirm password not match',
+                alertType: 'alert alert-danger',
+            })
+        }else{
+            await axios
+            .put(`http://localhost:8000/api/users/${user.id}`, {oldPassword, newPassword})
+            .then((res) => {
+                console.log(res)
+                setAlertMessage({
+                    status : true,
+                    message : 'Success update user',
+                    alertType: 'alert alert-success',
+                })
+                history.push('/');
+            })
+            .catch((err) => {
+                setAlertMessage({
+                    status : true,
+                    message : err.response.data.message,
+                    alertType: 'alert alert-danger',
+                })
+            });
+        }
+
+    }
+
 
     useEffect(() => {
         getProducts();
@@ -47,6 +99,13 @@ function Homepage() {
             {
                 token && 
                 <div className="container" style={{ marginTop: "50px" }}>
+                    {
+                        alertMessage && (
+                            <div className={alertMessage.alertType}>
+                            {alertMessage.message}
+                            </div>
+                        )
+                    }
                     <div className="row justify-content-center">
                         <div className="col-md-12">
                             <div className="card border-0 rounded shadow-sm">
@@ -66,7 +125,7 @@ function Homepage() {
                                                 <div className="card-body">
                                                     <h4 className="fw-bold">Update Profile</h4>
                                                     <hr/>
-                                                    <form onSubmit={() => {}}>
+                                                    <form onSubmit={updateProfileHandler}>
                                                         <input type="text" className="form-control" hidden value={user.id} />
                                                         <div className="row">
                                                             <div className="col-md-6">
@@ -83,7 +142,7 @@ function Homepage() {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="d-grid gap-2">
+                                                        <div className="d-grid gap-2">
                                                             <button type="submit" className="btn btn-primary">UPDATE</button>
                                                         </div>
                                                     </form>
@@ -91,7 +150,40 @@ function Homepage() {
                                             </div>
                                         </div>
                                         <div className="col-md-6">
-
+                                            <div className="card">
+                                                <div className="card-body">
+                                                    <h4 className="fw-bold">Change Password</h4>
+                                                    <hr/>
+                                                    <form onSubmit={updatePasswordHandler}>
+                                                        <input type="text" className="form-control" hidden value={user.id} />
+                                                        <div className="row">
+                                                            <div className="col-md-12">
+                                                                <div className="mb-3">
+                                                                    <label className="form-label">Old Password</label>
+                                                                    <input type="password" className="form-control" value={oldPassword} 
+                                                                    onChange={(e) => setOldPassword(e.target.value)} required />
+                                                                </div>
+                                                            </div>
+                                                            <div className="col-md-6">
+                                                                <div className="mb-3">
+                                                                    <label className="form-label">New Password</label>
+                                                                    <input type="password" className="form-control" value={newPassword} 
+                                                                    onChange={(e) => setNewPassword(e.target.value)} required />
+                                                                </div>
+                                                            </div>
+                                                            <div className="col-md-6">
+                                                                <div className="mb-3">
+                                                                    <label className="form-label">Confirm Password</label>
+                                                                    <input type="password" className="form-control" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="d-grid gap-2">
+                                                            <button type="submit" className="btn btn-primary">UPDATE</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="row">
@@ -99,7 +191,7 @@ function Homepage() {
                                             <div className="card">
                                                 <div className="card-body">
                                                     <span className="badge bg-primary mb-2">Keranjang : 5</span>
-                                                    <table class="table">
+                                                    <table className="table">
                                                         <thead>
                                                             <tr>
                                                                 <th scope="col">No</th>
@@ -128,15 +220,15 @@ function Homepage() {
                                                                 })   
                                                             }
                                                             <tr>
-                                                                <td colspan="3" className='text-center '>
+                                                                <td colSpan="3" className='text-center '>
                                                                     <strong className="text-uppercase">Total</strong>
                                                                 </td>
                                                                 <td><strong className="text-uppercase">Rp. Total</strong></td>
                                                             </tr>
                                                             <tr>
-                                                                <td colspan="4">
-                                                                    <div class="d-grid gap-2">
-                                                                        <button class="btn btn-primary" type="button">Checkout</button>
+                                                                <td colSpan="4">
+                                                                    <div className="d-grid gap-2">
+                                                                        <button className="btn btn-primary" type="button">Checkout</button>
                                                                     </div>
                                                                 </td>
                                                             </tr>
@@ -179,9 +271,9 @@ function Homepage() {
                                             </div>
                                     }
                                     {
-                                        products.map(data => {
+                                        products.map((data,index) => {
                                             return(
-                                                <div className="col-md-3">
+                                                <div className="col-md-3" >
                                                     <div className="card">
                                                         <div className="card-body">
                                                             <span className="badge bg-primary mb-2">Stock : {data.stock}</span>
