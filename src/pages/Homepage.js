@@ -4,12 +4,13 @@ import axios from 'axios';
 
 function Homepage() {
     const [products, setProducts] = useState([]);
+    const [filterProducts, setFilterProducts] = useState([]);
     const [user, setUser] = useState({});
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [alertMessage, setAlertMessage] = useState({});
-    const [validation, setValidation] = useState([]);
+    const [keyword, setKeyword] = useState(null);
     const history = useHistory();
 
     const token = localStorage.getItem("token");
@@ -84,6 +85,19 @@ function Homepage() {
             });
         }
 
+    }
+
+    const searchHandler = (keyword) => {
+        setKeyword(keyword)
+        const filterProducts = [];
+        products.forEach(data => {
+            const isNameSearch = data.name.toLowerCase().search(keyword.toLowerCase());
+            const isDescriptionSearch = data.description.toLowerCase().search(keyword.toLowerCase());
+            if(isNameSearch !== -1 || isDescriptionSearch !== -1){
+                filterProducts.push(data);
+            }
+        })
+        setFilterProducts(filterProducts)
     }
 
 
@@ -244,59 +258,128 @@ function Homepage() {
                     </div>
                 </div>
             }
-            <div className="container" style={{ marginTop: "50px" }}>
-                <div className="row justify-content-center">
-                    <div className="col-md-12">
-                        <div className="card border-0 rounded shadow-sm">
-                            <div className="card-body">
-                                <div className="row justify-content-between">
-                                    <div className="col-4">
-                                        <strong className="text-uppercase">PRODUCT LIMITED</strong>
-                                    </div>
-                                    {
-                                        !token &&
+            {
+                keyword === null ?
+                <div className="container" style={{ marginTop: "50px" }}>
+                    <div className="row justify-content-center">
+                        <div className="col-md-12">
+                            <div className="card border-0 rounded shadow-sm">
+                                <div className="card-body">
+                                    <div className="row justify-content-between">
                                         <div className="col-4">
-                                            <a href="/login" className="btn btn-primary float-end ">Login</a>
+                                            <strong className="text-uppercase">PRODUCT LIMITED</strong>
                                         </div>
-                                    }
-                                </div>
-                                <hr />
-                                <div className="row">
-                                    {
-                                        products.length === 0 && 
-                                            <div className='col-md-12'>
-                                                <div className="alert alert-danger" role="alert">
-                                                    Product out of stock!
+                                        {
+                                            !token ?
+                                            <div className="col-4">
+                                                <a href="/login" className="btn btn-primary float-end ">Login</a>
+                                            </div> :
+                                            <div className="col-4">
+                                                <div class="row g-3">
+                                                    <div class="col-auto">
+                                                        <input type="text" className="form-control" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder='Macbook' />
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <button type="button" onClick={searchHandler} className="btn btn-primary btn-inline">Search</button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                    }
-                                    {
-                                        products.map((data,index) => {
-                                            return(
-                                                <div className="col-md-3" >
-                                                    <div className="card">
-                                                        <div className="card-body">
-                                                            <span className="badge bg-primary mb-2">Stock : {data.stock}</span>
-                                                            <h5 className="card-title">{data.name}</h5>
-                                                            <h6>Rp. {data.price}</h6>
-                                                            <p className="card-text">{data.description}</p>
-                                                            <div className="btn-group" role="group" >
-                                                                <button type="button" className="btn btn-outline-primary no-border"> - </button>
-                                                                <button type="button" className="btn btn-primary">{data.stock}</button>
-                                                                <button type="button" className="btn btn-outline-primary"> + </button>
+                                        }
+                                    </div>
+                                    <hr />
+                                    <div className="row">
+                                        {
+                                            products.length === 0 && 
+                                                <div className='col-md-12'>
+                                                    <div className="alert alert-danger" role="alert">
+                                                        Product out of stock!
+                                                    </div>
+                                                </div>
+                                        }
+                                        {
+                                            products.map((data,index) => {
+                                                return(
+                                                    <div className="col-md-3" >
+                                                        <div className="card">
+                                                            <div className="card-body">
+                                                                <span className="badge bg-primary mb-2">Stock : {data.stock}</span>
+                                                                <h5 className="card-title">{data.name}</h5>
+                                                                <h6>Rp. {data.price}</h6>
+                                                                <p className="card-text">{data.description}</p>
+                                                                <div className="btn-group" role="group" >
+                                                                    <button type="button" className="btn btn-outline-primary no-border"> - </button>
+                                                                    <button type="button" className="btn btn-primary">{data.stock}</button>
+                                                                    <button type="button" className="btn btn-outline-primary"> + </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )
-                                        })   
-                                    }
+                                                )
+                                            })   
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </div> : 
+                <div className="container" style={{ marginTop: "50px" }}>
+                    <div className="row justify-content-center">
+                        <div className="col-md-12">
+                            <div className="card border-0 rounded shadow-sm">
+                                <div className="card-body">
+                                    <div className="row justify-content-between">
+                                        <div className="col-4">
+                                            <strong className="text-uppercase">PRODUCT LIMITED</strong>
+                                        </div>
+                                        {
+                                            !token ?
+                                            <div className="col-4">
+                                                <a href="/login" className="btn btn-primary float-end ">Login</a>
+                                            </div> :
+                                            <div className="col-4">
+                                                <input type="text" className="form-control" value={keyword} onChange={(e) => searchHandler(e.target.value)} placeholder='Macbook' />
+                                            </div>
+                                        }
+                                    </div>
+                                    <hr />
+                                    <div className="row">
+                                        {
+                                            filterProducts.length === 0 && 
+                                                <div className='col-md-12'>
+                                                    <div className="alert alert-danger" role="alert">
+                                                        Product out of stock!
+                                                    </div>
+                                                </div>
+                                        }
+                                        {
+                                            filterProducts.map((data,index) => {
+                                                return(
+                                                    <div className="col-md-3" >
+                                                        <div className="card">
+                                                            <div className="card-body">
+                                                                <span className="badge bg-primary mb-2">Stock : {data.stock}</span>
+                                                                <h5 className="card-title">{data.name}</h5>
+                                                                <h6>Rp. {data.price}</h6>
+                                                                <p className="card-text">{data.description}</p>
+                                                                <div className="btn-group" role="group" >
+                                                                    <button type="button" className="btn btn-outline-primary no-border"> - </button>
+                                                                    <button type="button" className="btn btn-primary">{data.stock}</button>
+                                                                    <button type="button" className="btn btn-outline-primary"> + </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })   
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            }
         </>
     )
 
