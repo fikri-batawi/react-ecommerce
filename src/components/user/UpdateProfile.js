@@ -24,6 +24,13 @@ const UpdateProfile = () => {
                 alertType: 'alert alert-success',
             }))
             history.push('/');
+        })
+        .catch(error=> {
+            dispatch(updateAlertMessage({
+                status : true,
+                message : error.response.data.message,
+                alertType: 'alert alert-danger',
+            }))
         });
     }
 
@@ -45,7 +52,7 @@ const UpdateProfile = () => {
                         <div className="col-md-6">
                             <div className="mb-3">
                                 <label className="form-label">E-MAIL</label>
-                                <input type="email" className="form-control" value={user.email} onChange={(e) => dispatch(updateUser({...user, name: e.target.value}))} />
+                                <input type="email" className="form-control" value={user.email} onChange={(e) => dispatch(updateUser({...user, email: e.target.value}))} />
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from 'react-router';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
@@ -34,7 +34,7 @@ function Homepage() {
     }
 
     const getProducts = () => {
-         axios.get('http://localhost:8000/api/products')
+        axios.get('http://localhost:8000/api/products')
         .then((response) => {
             dispatch(updateProducts(response.data.products.data));
         })
@@ -57,8 +57,6 @@ function Homepage() {
         });
     };
 
-    
-
     useEffect(()=> {
         getProducts();
         if(token){
@@ -68,48 +66,49 @@ function Homepage() {
 
     return (
         <>
-            {
-                token && 
-                <div className="container" style={{ marginTop: "50px" }}>
-                    {
-                        alertMessage && (
-                            <div className={alertMessage.alertType}>
-                            {alertMessage.message}
-                            </div>
-                        )
-                    }
-                    <div className="row justify-content-center">
-                        <div className="col-md-12">
-                            <div className="card border-0 rounded shadow-sm">
-                                <div className="card-body">
-                                    <div className="row justify-content-between">
-                                        <div className="col-4">
-                                            SELAMAT DATANG <strong className="text-uppercase">{user.name ?? ''}</strong>
-                                        </div>
-                                        <div className="col-4">
-                                            <button onClick={logoutHanlder} className="btn btn-danger float-end ">Logout</button>
-                                        </div>
+            <div className="container" style={{ marginTop: "50px" }}>
+                { alertMessage && <div className={alertMessage.alertType}>{alertMessage.message}</div> }
+                <div className="row justify-content-center">
+                    <div className="col-md-12">
+                        <div className="card border-0 rounded shadow-sm">
+                            <div className="card-body">
+                                <div className="row justify-content-between">
+                                    <div className="col-4">
+                                        SELAMAT DATANG <strong className="text-uppercase">{user.name ?? ''}</strong>
                                     </div>
-                                    <hr />
-                                    <div className="row mb-2">
-                                        <div className="col-md-6">
-                                            <UpdateProfile />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <UpdatePassword />
-                                        </div>
-                                    </div>
-                                    <div className="row">
-                                        <div className="col-md-12">
-                                            <CartList />
-                                        </div>
+                                    <div className="col-4">
+                                        {
+                                            token ? 
+                                            <button onClick={logoutHanlder} className="btn btn-danger float-end ">Logout</button> :
+                                            <button onClick={() => history.push('/login')} className="btn btn-primary float-end ">Login</button>
+                                        }
                                     </div>
                                 </div>
+                                <hr />
+                                {
+                                    token && 
+                                    <>
+                                        <div className="row mb-2">
+                                            <div className="col-md-6">
+                                                <UpdateProfile />
+                                            </div>
+                                            <div className="col-md-6">
+                                                <UpdatePassword />
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="col-md-12">
+                                                <CartList />
+                                            </div>
+                                        </div>
+                                    </>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
-            }
+            </div>
+            
             { keyword === null ? <Products products={products} /> : <Products products={productsFilter} /> }
         </>
     )

@@ -110,6 +110,7 @@ function Register() {
                                         </div>
                                     </div>
                                 </div>
+                                <p>Have an account? <a href='#' onClick={()=>history.push('/login')}>Login</a> </p>
                                 <button type="submit" className="btn btn-primary">REGISTER</button>
                             </form>
                         </div>

@@ -9,6 +9,7 @@ const Checkout = () => {
     const [payment, setPayment] = useState(false);
     const [timePayment, setTimePayment] = useState(0);
     const user = useSelector(state => state.user.value)
+    const carts = useSelector(state => state.carts.value)
 
     const checkoutHandler = () => {
         axios.delete(`http://localhost:8000/api/cart-users/${user.id}`)
@@ -19,13 +20,17 @@ const Checkout = () => {
     }
 
     useEffect(() => {
+        
+        if(!carts.length){
+            history.push('/')
+        }
+
         timePayment > 0 && setTimeout(() => {
             setTimePayment(timePayment - 1)
             if(timePayment===1){
                 history.push('/')
             }
         }, 1000);
-        
     }, [timePayment]);
 
     return(

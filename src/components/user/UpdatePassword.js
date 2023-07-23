@@ -27,7 +27,6 @@ const UpdatePassword = () => {
             await axios
             .put(`http://localhost:8000/api/users/${user.id}`, {oldPassword: user.oldPassword, newPassword: user.newPassword})
             .then((res) => {
-                console.log(res)
                 dispatch(updateAlertMessage({
                     status : true,
                     message : 'Success update user',

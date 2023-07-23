@@ -71,6 +71,7 @@ function Login() {
                                     )
                                 }
                                 <div className="d-grid gap-2">
+                                    <p>Don't have account? <a href='#' onClick={()=>history.push('/register')}>Register</a> </p>
                                     <button type="submit" className="btn btn-primary">LOGIN</button>
                                 </div>
                             </form>
