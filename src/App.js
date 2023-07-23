@@ -5,6 +5,7 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/admin/Dashboard";
 import Homepage from "./pages/Homepage";
 
+
 function App() {
 	return(
 		<div>

@@ -1,32 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router';
 import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateProducts } from '../redux/reducers/products';
+import { updateUser } from '../redux/reducers/user';
+import { updateAlertMessage } from '../redux/reducers/alertMessage';
+import Products from '../components/product/Products';
+import { updateCarts } from '../redux/reducers/carts';
 
 function Homepage() {
-    const [products, setProducts] = useState([]);
-    const [filterProducts, setFilterProducts] = useState([]);
-    const [user, setUser] = useState({});
-    const [oldPassword, setOldPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [alertMessage, setAlertMessage] = useState({});
-    const [keyword, setKeyword] = useState(null);
+    // Router
     const history = useHistory();
-
+    // Token
     const token = localStorage.getItem("token");
+    // Redux
+    const dispatch = useDispatch();
+    const user = useSelector(state => state.user.value);
+    const products = useSelector(state => state.products.value);
+    const productsFilter = useSelector(state => state.productsFilter.value);
+    const alertMessage = useSelector(state => state.alertMessage.value);
+    const keyword = useSelector(state => state.keyword.value);
+    const carts = useSelector(state => state.carts.value);
 
     const getUser = async () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
         await axios.get('http://localhost:8000/api/user')
         .then((response) => {
-            setUser(response.data);
+            dispatch(updateUser(response.data));
         })
     }
 
     const getProducts = async () => {
         await axios.get('http://localhost:8000/api/products')
         .then((response) => {
-            setProducts(response.data.products.data);
+            dispatch(updateProducts(response.data.products.data));
         })
     }
 
@@ -36,7 +43,7 @@ function Homepage() {
         .then(() => {
             localStorage.removeItem("token");
             history.push('/');
-            setUser({})
+            dispatch(updateUser({}));
         });
     };
 
@@ -46,11 +53,11 @@ function Homepage() {
         await axios
         .put(`http://localhost:8000/api/users/${user.id}`, {name:user.name, email:user.email})
         .then(() => {
-            setAlertMessage({
+            dispatch(updateAlertMessage({
                 status : true,
                 message : 'Success update user',
                 alertType: 'alert alert-success',
-            })
+            }))
             history.push('/');
         });
     }
@@ -58,48 +65,34 @@ function Homepage() {
     const updatePasswordHandler = async (e) => {
         e.preventDefault();
 
-        if(newPassword !== confirmPassword){
-            setAlertMessage({
+        if(user.newPassword !== user.confirmPassword){
+            dispatch(updateAlertMessage({
                 status : true,
                 message : 'Confirm password not match',
                 alertType: 'alert alert-danger',
-            })
+            }))
         }else{
             await axios
-            .put(`http://localhost:8000/api/users/${user.id}`, {oldPassword, newPassword})
+            .put(`http://localhost:8000/api/users/${user.id}`, {oldPassword: user.oldPassword, newPassword: user.newPassword})
             .then((res) => {
                 console.log(res)
-                setAlertMessage({
+                dispatch(updateAlertMessage({
                     status : true,
                     message : 'Success update user',
-                    alertType: 'alert alert-success',
-                })
+                    alertType: 'alert alert-success',    
+                }))
                 history.push('/');
             })
             .catch((err) => {
-                setAlertMessage({
+                dispatch(updateAlertMessage({
                     status : true,
                     message : err.response.data.message,
                     alertType: 'alert alert-danger',
-                })
+                }))
             });
         }
 
     }
-
-    const searchHandler = (keyword) => {
-        setKeyword(keyword)
-        const filterProducts = [];
-        products.forEach(data => {
-            const isNameSearch = data.name.toLowerCase().search(keyword.toLowerCase());
-            const isDescriptionSearch = data.description.toLowerCase().search(keyword.toLowerCase());
-            if(isNameSearch !== -1 || isDescriptionSearch !== -1){
-                filterProducts.push(data);
-            }
-        })
-        setFilterProducts(filterProducts)
-    }
-
 
     useEffect(() => {
         getProducts();
@@ -146,13 +139,13 @@ function Homepage() {
                                                                 <div className="mb-3">
                                                                     <label className="form-label">NAME</label>
                                                                     <input type="text" className="form-control" value={user.name} 
-                                                                    onChange={(e) => setUser({...user, name: e.target.value})} />
+                                                                    onChange={(e) => dispatch(updateUser({...user, name: e.target.value}))} />
                                                                 </div>
                                                             </div>
                                                             <div className="col-md-6">
                                                                 <div className="mb-3">
                                                                     <label className="form-label">E-MAIL</label>
-                                                                    <input type="email" className="form-control" value={user.email} onChange={(e) => setUser({...user,email:e.target.value})} />
+                                                                    <input type="email" className="form-control" value={user.email} onChange={(e) => dispatch(updateUser({...user, name: e.target.value}))} />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -174,21 +167,21 @@ function Homepage() {
                                                             <div className="col-md-12">
                                                                 <div className="mb-3">
                                                                     <label className="form-label">Old Password</label>
-                                                                    <input type="password" className="form-control" value={oldPassword} 
-                                                                    onChange={(e) => setOldPassword(e.target.value)} required />
+                                                                    <input type="password" className="form-control" value={user.oldPassword} 
+                                                                    onChange={(e) => dispatch(updateUser({...user, oldPassword: e.target.value})) } required />
                                                                 </div>
                                                             </div>
                                                             <div className="col-md-6">
                                                                 <div className="mb-3">
                                                                     <label className="form-label">New Password</label>
-                                                                    <input type="password" className="form-control" value={newPassword} 
-                                                                    onChange={(e) => setNewPassword(e.target.value)} required />
+                                                                    <input type="password" className="form-control" value={user.newPassword} 
+                                                                    onChange={(e) => dispatch(updateUser({...user, newPassword: e.target.value}))} required />
                                                                 </div>
                                                             </div>
                                                             <div className="col-md-6">
                                                                 <div className="mb-3">
                                                                     <label className="form-label">Confirm Password</label>
-                                                                    <input type="password" className="form-control" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                                                                    <input type="password" className="form-control" value={user.confirmPassword} onChange={(e) => dispatch(updateUser({...user, confirmPassword: e.target.value}))} required />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -216,7 +209,7 @@ function Homepage() {
                                                         </thead>
                                                         <tbody>
                                                             {
-                                                                products.map((data, index) => {
+                                                                carts.map((data, index) => {
                                                                     return(
                                                                         <tr>
                                                                             <th scope="row">{index+1}</th>
@@ -258,128 +251,7 @@ function Homepage() {
                     </div>
                 </div>
             }
-            {
-                keyword === null ?
-                <div className="container" style={{ marginTop: "50px" }}>
-                    <div className="row justify-content-center">
-                        <div className="col-md-12">
-                            <div className="card border-0 rounded shadow-sm">
-                                <div className="card-body">
-                                    <div className="row justify-content-between">
-                                        <div className="col-4">
-                                            <strong className="text-uppercase">PRODUCT LIMITED</strong>
-                                        </div>
-                                        {
-                                            !token ?
-                                            <div className="col-4">
-                                                <a href="/login" className="btn btn-primary float-end ">Login</a>
-                                            </div> :
-                                            <div className="col-4">
-                                                <div class="row g-3">
-                                                    <div class="col-auto">
-                                                        <input type="text" className="form-control" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder='Macbook' />
-                                                    </div>
-                                                    <div class="col-auto">
-                                                        <button type="button" onClick={searchHandler} className="btn btn-primary btn-inline">Search</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    </div>
-                                    <hr />
-                                    <div className="row">
-                                        {
-                                            products.length === 0 && 
-                                                <div className='col-md-12'>
-                                                    <div className="alert alert-danger" role="alert">
-                                                        Product out of stock!
-                                                    </div>
-                                                </div>
-                                        }
-                                        {
-                                            products.map((data,index) => {
-                                                return(
-                                                    <div className="col-md-3" >
-                                                        <div className="card">
-                                                            <div className="card-body">
-                                                                <span className="badge bg-primary mb-2">Stock : {data.stock}</span>
-                                                                <h5 className="card-title">{data.name}</h5>
-                                                                <h6>Rp. {data.price}</h6>
-                                                                <p className="card-text">{data.description}</p>
-                                                                <div className="btn-group" role="group" >
-                                                                    <button type="button" className="btn btn-outline-primary no-border"> - </button>
-                                                                    <button type="button" className="btn btn-primary">{data.stock}</button>
-                                                                    <button type="button" className="btn btn-outline-primary"> + </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })   
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> : 
-                <div className="container" style={{ marginTop: "50px" }}>
-                    <div className="row justify-content-center">
-                        <div className="col-md-12">
-                            <div className="card border-0 rounded shadow-sm">
-                                <div className="card-body">
-                                    <div className="row justify-content-between">
-                                        <div className="col-4">
-                                            <strong className="text-uppercase">PRODUCT LIMITED</strong>
-                                        </div>
-                                        {
-                                            !token ?
-                                            <div className="col-4">
-                                                <a href="/login" className="btn btn-primary float-end ">Login</a>
-                                            </div> :
-                                            <div className="col-4">
-                                                <input type="text" className="form-control" value={keyword} onChange={(e) => searchHandler(e.target.value)} placeholder='Macbook' />
-                                            </div>
-                                        }
-                                    </div>
-                                    <hr />
-                                    <div className="row">
-                                        {
-                                            filterProducts.length === 0 && 
-                                                <div className='col-md-12'>
-                                                    <div className="alert alert-danger" role="alert">
-                                                        Product out of stock!
-                                                    </div>
-                                                </div>
-                                        }
-                                        {
-                                            filterProducts.map((data,index) => {
-                                                return(
-                                                    <div className="col-md-3" >
-                                                        <div className="card">
-                                                            <div className="card-body">
-                                                                <span className="badge bg-primary mb-2">Stock : {data.stock}</span>
-                                                                <h5 className="card-title">{data.name}</h5>
-                                                                <h6>Rp. {data.price}</h6>
-                                                                <p className="card-text">{data.description}</p>
-                                                                <div className="btn-group" role="group" >
-                                                                    <button type="button" className="btn btn-outline-primary no-border"> - </button>
-                                                                    <button type="button" className="btn btn-primary">{data.stock}</button>
-                                                                    <button type="button" className="btn btn-outline-primary"> + </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })   
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> 
-            }
+            { keyword === null ? <Products products={products} /> : <Products products={productsFilter} /> }
         </>
     )
 
