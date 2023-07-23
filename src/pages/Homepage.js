@@ -4,9 +4,11 @@ import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateProducts } from '../redux/reducers/products';
 import { updateUser } from '../redux/reducers/user';
-import { updateAlertMessage } from '../redux/reducers/alertMessage';
-import Products from '../components/product/Products';
 import { updateCarts } from '../redux/reducers/carts';
+import Products from '../components/product/Products';
+import UpdateProfile from '../components/user/UpdateProfile';
+import UpdatePassword from '../components/user/UpdatePassword';
+import CartList from '../components/user/CartList';
 
 function Homepage() {
     // Router
@@ -20,26 +22,34 @@ function Homepage() {
     const productsFilter = useSelector(state => state.productsFilter.value);
     const alertMessage = useSelector(state => state.alertMessage.value);
     const keyword = useSelector(state => state.keyword.value);
-    const carts = useSelector(state => state.carts.value);
 
-    const getUser = async () => {
+    const getUser = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-        await axios.get('http://localhost:8000/api/user')
+        axios.get('http://localhost:8000/api/user')
         .then((response) => {
+            getCarts(response.data.id)
             dispatch(updateUser(response.data));
+            
         })
     }
 
-    const getProducts = async () => {
-        await axios.get('http://localhost:8000/api/products')
+    const getProducts = () => {
+         axios.get('http://localhost:8000/api/products')
         .then((response) => {
             dispatch(updateProducts(response.data.products.data));
         })
     }
 
-    const logoutHanlder = async () => {
+    const getCarts = (userId) => {
+        axios.get(`http://localhost:8000/api/cart-users/${userId}`)
+        .then((response) => {
+            dispatch(updateCarts(response.data.carts));
+        })
+    }
+
+    const logoutHanlder = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-        await axios.post('http://localhost:8000/api/logout')
+        axios.post('http://localhost:8000/api/logout')
         .then(() => {
             localStorage.removeItem("token");
             history.push('/');
@@ -47,54 +57,9 @@ function Homepage() {
         });
     };
 
-    const updateProfileHandler = async (e) => {
-        e.preventDefault();
+    
 
-        await axios
-        .put(`http://localhost:8000/api/users/${user.id}`, {name:user.name, email:user.email})
-        .then(() => {
-            dispatch(updateAlertMessage({
-                status : true,
-                message : 'Success update user',
-                alertType: 'alert alert-success',
-            }))
-            history.push('/');
-        });
-    }
-
-    const updatePasswordHandler = async (e) => {
-        e.preventDefault();
-
-        if(user.newPassword !== user.confirmPassword){
-            dispatch(updateAlertMessage({
-                status : true,
-                message : 'Confirm password not match',
-                alertType: 'alert alert-danger',
-            }))
-        }else{
-            await axios
-            .put(`http://localhost:8000/api/users/${user.id}`, {oldPassword: user.oldPassword, newPassword: user.newPassword})
-            .then((res) => {
-                console.log(res)
-                dispatch(updateAlertMessage({
-                    status : true,
-                    message : 'Success update user',
-                    alertType: 'alert alert-success',    
-                }))
-                history.push('/');
-            })
-            .catch((err) => {
-                dispatch(updateAlertMessage({
-                    status : true,
-                    message : err.response.data.message,
-                    alertType: 'alert alert-danger',
-                }))
-            });
-        }
-
-    }
-
-    useEffect(() => {
+    useEffect(()=> {
         getProducts();
         if(token){
             getUser();
@@ -128,121 +93,15 @@ function Homepage() {
                                     <hr />
                                     <div className="row mb-2">
                                         <div className="col-md-6">
-                                            <div className="card">
-                                                <div className="card-body">
-                                                    <h4 className="fw-bold">Update Profile</h4>
-                                                    <hr/>
-                                                    <form onSubmit={updateProfileHandler}>
-                                                        <input type="text" className="form-control" hidden value={user.id} />
-                                                        <div className="row">
-                                                            <div className="col-md-6">
-                                                                <div className="mb-3">
-                                                                    <label className="form-label">NAME</label>
-                                                                    <input type="text" className="form-control" value={user.name} 
-                                                                    onChange={(e) => dispatch(updateUser({...user, name: e.target.value}))} />
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-md-6">
-                                                                <div className="mb-3">
-                                                                    <label className="form-label">E-MAIL</label>
-                                                                    <input type="email" className="form-control" value={user.email} onChange={(e) => dispatch(updateUser({...user, name: e.target.value}))} />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="d-grid gap-2">
-                                                            <button type="submit" className="btn btn-primary">UPDATE</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
+                                            <UpdateProfile />
                                         </div>
                                         <div className="col-md-6">
-                                            <div className="card">
-                                                <div className="card-body">
-                                                    <h4 className="fw-bold">Change Password</h4>
-                                                    <hr/>
-                                                    <form onSubmit={updatePasswordHandler}>
-                                                        <input type="text" className="form-control" hidden value={user.id} />
-                                                        <div className="row">
-                                                            <div className="col-md-12">
-                                                                <div className="mb-3">
-                                                                    <label className="form-label">Old Password</label>
-                                                                    <input type="password" className="form-control" value={user.oldPassword} 
-                                                                    onChange={(e) => dispatch(updateUser({...user, oldPassword: e.target.value})) } required />
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-md-6">
-                                                                <div className="mb-3">
-                                                                    <label className="form-label">New Password</label>
-                                                                    <input type="password" className="form-control" value={user.newPassword} 
-                                                                    onChange={(e) => dispatch(updateUser({...user, newPassword: e.target.value}))} required />
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-md-6">
-                                                                <div className="mb-3">
-                                                                    <label className="form-label">Confirm Password</label>
-                                                                    <input type="password" className="form-control" value={user.confirmPassword} onChange={(e) => dispatch(updateUser({...user, confirmPassword: e.target.value}))} required />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="d-grid gap-2">
-                                                            <button type="submit" className="btn btn-primary">UPDATE</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
+                                            <UpdatePassword />
                                         </div>
                                     </div>
                                     <div className="row">
                                         <div className="col-md-12">
-                                            <div className="card">
-                                                <div className="card-body">
-                                                    <span className="badge bg-primary mb-2">Keranjang : 5</span>
-                                                    <table className="table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th scope="col">No</th>
-                                                                <th scope="col">Name</th>
-                                                                <th scope="col">Quantity</th>
-                                                                <th scope="col">Price</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {
-                                                                carts.map((data, index) => {
-                                                                    return(
-                                                                        <tr>
-                                                                            <th scope="row">{index+1}</th>
-                                                                            <td>{data.name}</td>
-                                                                            <td>
-                                                                                <div className="btn-group" role="group" >
-                                                                                    <button type="button" className="btn btn-outline-primary no-border"> - </button>
-                                                                                    <button type="button" className="btn btn-primary">{data.stock}</button>
-                                                                                    <button type="button" className="btn btn-outline-primary"> + </button>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>Rp. {data.price}</td>
-                                                                        </tr>
-                                                                    )
-                                                                })   
-                                                            }
-                                                            <tr>
-                                                                <td colSpan="3" className='text-center '>
-                                                                    <strong className="text-uppercase">Total</strong>
-                                                                </td>
-                                                                <td><strong className="text-uppercase">Rp. Total</strong></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td colSpan="4">
-                                                                    <div className="d-grid gap-2">
-                                                                        <button className="btn btn-primary" type="button">Checkout</button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
+                                            <CartList />
                                         </div>
                                     </div>
                                 </div>
