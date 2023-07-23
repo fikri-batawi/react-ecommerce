@@ -4,6 +4,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Dashboard from "./pages/admin/Dashboard";
 import Homepage from "./pages/Homepage";
+import Checkout from "./pages/Checkout";
 
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
 				<Route exact path="/login" component={Login}/>
 				<Route exact path="/register" component={Register}/>
 				<Route exact path="/dashboard" component={Dashboard}/>
+				<Route exact path="/checkout" component={Checkout}/>
 			</Switch>
 		</div>
 	)

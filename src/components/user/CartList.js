@@ -132,7 +132,7 @@ const CartList = () => {
                             <tr>
                                 <td colSpan="6">
                                     <div className="d-grid gap-2">
-                                        <button className="btn btn-primary" type="button">Checkout</button>
+                                        <button onClick={() => history.push('/checkout')} type="button" className="btn btn-primary">Checkout</button>
                                     </div>
                                 </td>
                             </tr>
