@@ -15,17 +15,24 @@ function Login() {
     }, []);
 
 
-    const loginHandler = async (e) => {
+    const loginHandler = (e) => {
         e.preventDefault();
         
         const formData = new FormData();
         formData.append('email', email);
         formData.append('password', password);
 
-        await axios.post('http://localhost:8000/api/login', formData)
+        axios.post('http://localhost:8000/api/login', formData)
         .then((response) => {
             localStorage.setItem('token', response.data.token);
-            history.push('/');
+
+            axios.get(`http://localhost:8000/api/user-admins/${response.data.user.id}`)
+            .then((res) => {
+                history.push('/dashboard');
+            })
+            .catch(err => {
+                history.push('/');
+            })
         })
         .catch((error) => {
             setValidation(error.response.data);

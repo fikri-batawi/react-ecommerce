@@ -47,7 +47,7 @@ function Homepage() {
         })
     }
 
-    const logoutHanlder = () => {
+    const logoutHandler = () => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
         axios.post('http://localhost:8000/api/logout')
         .then(() => {
@@ -79,7 +79,7 @@ function Homepage() {
                                     <div className="col-4">
                                         {
                                             token ? 
-                                            <button onClick={logoutHanlder} className="btn btn-danger float-end ">Logout</button> :
+                                            <button onClick={logoutHandler} className="btn btn-danger float-end ">Logout</button> :
                                             <button onClick={() => history.push('/login')} className="btn btn-primary float-end ">Login</button>
                                         }
                                     </div>

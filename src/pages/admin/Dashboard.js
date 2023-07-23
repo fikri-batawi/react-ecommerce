@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router';
 import axios from 'axios';
+import { updateUser } from '../../redux/reducers/user';
+import { useDispatch, useSelector } from 'react-redux';
 
 const baseURL = 'http://localhost:8000/api/products';
 
@@ -19,6 +21,8 @@ function Dashboard() {
     const [price, setPrice] = useState('');
     const [stock, setStock] = useState('');
     const [validation, setValidation] = useState([]);
+    const dispatch = useDispatch();
+    const user = useSelector(state=>state.user.value)
 
     // Product
     const [products, setProducts] = useState([]);
@@ -29,16 +33,34 @@ function Dashboard() {
     //token
     const token = localStorage.getItem("token");
 
+    const getUser = () => {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        axios.get('http://localhost:8000/api/user')
+        .then((response) => {
+            // Check role
+            isUserAdmin(response.data.id)
+            dispatch(updateUser(response.data));
+            
+        })
+    }
+
+    const isUserAdmin = (userId) => {
+        axios.get(`http://localhost:8000/api/user-admins/${userId}`)
+        .then((res) => {
+            history.push('/dashboard');
+        })
+        .catch(err => {
+            history.push('/');
+        })
+    }
+
     //hook useEffect
     useEffect(() => {
+        if(!token) {
+            history.push('/login');
+        }
 
-        // //check token empty
-        // if(!token) {
-
-        //     //redirect login page
-        //     history.push('/login');
-        // }
-        
+        getUser();
         getProductsHandler();
     }, []);
 
@@ -138,6 +160,16 @@ function Dashboard() {
         setValidation([])
     }
 
+    const logoutHandler = () => {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        axios.post('http://localhost:8000/api/logout')
+        .then(() => {
+            localStorage.removeItem("token");
+            history.push('/');
+            dispatch(updateUser({}));
+        });
+    };
+
     return (
         <>
             {
@@ -232,7 +264,8 @@ function Dashboard() {
                                         <h4 className="fw-bold">LIST PRODUCT</h4>
                                     </div>
                                     <div className="col-4">
-                                        <button onClick={showFormAdd} className="btn btn-primary float-end ">Add Product</button>
+                                        <button onClick={logoutHandler} className="btn btn-danger float-end">Logout</button>
+                                        <button onClick={showFormAdd} className="btn btn-primary float-end mx-2">Add Product</button>
                                     </div>
                                 </div>
                                 <hr />
