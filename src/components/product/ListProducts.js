@@ -1,10 +1,11 @@
 import React from 'react';
-import axios from 'axios';
 import { useHistory } from 'react-router';
 import Alert from '../../parts/Alert';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateCarts } from '../../redux/reducers/carts';
 import { updateAlertMessage } from '../../redux/reducers/alertMessage';
+import { getCartUser } from '../../requests/cartUser';
+import { storeCart, updateCart } from '../../requests/cart';
 
 const ListProducts = ({products}) => {
     const dispatch = useDispatch();
@@ -12,11 +13,9 @@ const ListProducts = ({products}) => {
     const carts = useSelector(state => state.carts.value);
     const user = useSelector(state => state.user.value);
 
-    const addCartHandler = (data) => {
+    const addCartHandler = async (data) => {
         // Check product exist on cart
-        const isProductExist = carts.filter(cart => {
-            return cart.product_id === data.id;
-        });
+        const isProductExist = carts.filter(cart => { return cart.product_id === data.id });
 
         if(!isProductExist.length){
             // Create database
@@ -25,17 +24,12 @@ const ListProducts = ({products}) => {
                 product_id : data.id,
                 quantity : 1
             }
-            axios.post('http://localhost:8000/api/carts', cart)
-            .then((res) => {
-                axios.get(`http://localhost:8000/api/cart-users/${user.id}`)
-                .then((response) => {
-                    dispatch(updateCarts(response.data.carts));
-                })
-                history.push('/');
-            })
-            .catch((error) => {
-                console.log(error.response.data)
-            })
+            await storeCart(cart)
+
+            // Update cart
+            const cartUser = await getCartUser(user.id);
+            dispatch(updateCarts(cartUser));
+            history.push('/');
         }else{
             // Max stock alert
             if(data.stock === isProductExist[0].quantity){
@@ -49,17 +43,12 @@ const ListProducts = ({products}) => {
 
             // Update database
             const quantity = isProductExist[0].quantity + 1;
-            axios.put(`http://localhost:8000/api/carts/${isProductExist[0].id}`, {quantity})
-            .then((res) => {
-                axios.get(`http://localhost:8000/api/cart-users/${user.id}`)
-                .then((response) => {
-                    dispatch(updateCarts(response.data.carts));
-                })
-                history.push('/');
-            })
-            .catch((error) => {
-                console.log(error.response.data)
-            })
+            await updateCart({quantity}, isProductExist[0].id)
+
+            // Update cart
+            const cartUser = await getCartUser(user.id);
+            dispatch(updateCarts(cartUser));
+            history.push('/');
         }
 
     }

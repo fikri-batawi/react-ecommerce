@@ -2,7 +2,6 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 const CartDetail = () => {
-    // Redux
     const carts = useSelector(state => state.carts.value);
     let totalCart = useSelector(state => state.carts.totalCart);
     let totalPrice = useSelector(state => state.carts.totalPrice);

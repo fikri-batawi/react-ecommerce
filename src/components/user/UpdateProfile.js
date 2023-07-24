@@ -1,35 +1,31 @@
 import React from 'react';
-import { useHistory } from 'react-router';
-import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../redux/reducers/user';
 import { updateAlertMessage } from '../../redux/reducers/alertMessage';
+import { updateUser as updateUserRequest } from '../../requests/user';
     
 const UpdateProfile = () => {
-    const history = useHistory();
     const dispatch = useDispatch();
     const user = useSelector(state => state.user.value);
 
     const updateProfileHandler = async (e) => {
         e.preventDefault();
 
-        await axios
-        .put(`http://localhost:8000/api/users/${user.id}`, {name:user.name, email:user.email})
-        .then(() => {
+        const data = {name:user.name, email:user.email}
+        try {
+            await updateUserRequest(data, user.id)
             dispatch(updateAlertMessage({
                 status : true,
                 message : 'Success update user',
                 alertType: 'alert alert-success',
             }))
-            history.push('/');
-        })
-        .catch(error=> {
+        } catch (error) {
             dispatch(updateAlertMessage({
                 status : true,
-                message : error.response.data.message,
+                message : error.message,
                 alertType: 'alert alert-danger',
             }))
-        });
+        }
     }
 
     return(

@@ -1,12 +1,10 @@
 import React from 'react';
-import { useHistory } from 'react-router';
-import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../redux/reducers/user';
 import { updateAlertMessage } from '../../redux/reducers/alertMessage';
+import { updateUser as updateUserRequest } from '../../requests/user';
 
 const UpdatePassword = () => {
-    const history = useHistory();
     const dispatch = useDispatch();
     const user = useSelector(state => state.user.value);
 
@@ -20,25 +18,23 @@ const UpdatePassword = () => {
                 alertType: 'alert alert-danger',
             }))
         }else{
-            await axios
-            .put(`http://localhost:8000/api/users/${user.id}`, {oldPassword: user.oldPassword, newPassword: user.newPassword})
-            .then((res) => {
+            const data = {oldPassword: user.oldPassword, newPassword: user.newPassword}
+            try {
+                await updateUserRequest(data, user.id)
                 dispatch(updateAlertMessage({
                     status : true,
                     message : 'Success update user',
                     alertType: 'alert alert-success',    
                 }))
-                history.push('/');
-            })
-            .catch((err) => {
+            } catch (error) {
                 dispatch(updateAlertMessage({
                     status : true,
-                    message : err.response.data.message,
+                    message : error.message,
                     alertType: 'alert alert-danger',
                 }))
-            });
+                
+            }
         }
-
     }
 
     return(

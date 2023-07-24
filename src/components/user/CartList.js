@@ -1,11 +1,10 @@
 import React from 'react';
 import { useHistory } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
 import { updateCarts } from '../../redux/reducers/carts';
 import { updateAlertMessage } from '../../redux/reducers/alertMessage';
-
-
+import { getCartUser } from '../../requests/cartUser';
+import { deleteCart, updateCart } from '../../requests/cart';
 
 const CartList = () => {
     // Redux
@@ -17,50 +16,36 @@ const CartList = () => {
     const products = useSelector(state => state.products.value);
     const user = useSelector(state => state.user.value);
 
-    const removeCartHandler = (cart) => {
-        axios.delete(`http://localhost:8000/api/carts/${cart.id}`)
-        .then((response) => {
-            axios.get(`http://localhost:8000/api/cart-users/${user.id}`)
-            .then((response) => {
-                dispatch(updateCarts(response.data.carts));
-            })
-        })
+    const removeCartHandler = async (cart) => {
+        // Delete cart
+        await deleteCart(cart.id)
+
+        // Update cart
+        const cartUser = await getCartUser(user.id);
+        dispatch(updateCarts(cartUser));
         history.push('/');
     }
-    const minCartHandler = (data) => {
+    const minCartHandler = async (data) => {
         if(data.quantity === 1){
-            // Remove product cart
-            axios.delete(`http://localhost:8000/api/carts/${data.id}`)
-            .then((res) => {
-                axios.get(`http://localhost:8000/api/cart-users/${user.id}`)
-                .then((response) => {
-                    dispatch(updateCarts(response.data.carts));
-                })
-                history.push('/');
-            })
-            .catch((error) => {
-                console.log(error.response.data)
-            })
+            // Delete cart
+            await deleteCart(data.id)
+
+            // Update cart
+            const cartUser = await getCartUser(user.id);
+            dispatch(updateCarts(cartUser));
+            history.push('/');
         }else{
-            // Update product cart
-            axios.put(`http://localhost:8000/api/carts/${data.id}`, {quantity:data.quantity - 1})
-            .then((res) => {
-                axios.get(`http://localhost:8000/api/cart-users/${user.id}`)
-                .then((response) => {
-                    dispatch(updateCarts(response.data.carts));
-                })
-                history.push('/');
-            })
-            .catch((error) => {
-                console.log(error.response.data)
-            })
+            // Update db cart
+            await updateCart({quantity:data.quantity - 1}, data.id)
+
+            // Update cart
+            const cartUser = await getCartUser(user.id);
+            dispatch(updateCarts(cartUser));
+            history.push('/');
         }
     }
-    const plusCartHandler = (data) => {
-        const isProductExist = products.filter(products => {
-            return products.id === data.product_id;
-        });
-        console.log(isProductExist[0].stock)
+    const plusCartHandler = async (data) => {
+        const isProductExist = products.filter(products => { return products.id === data.product_id; });
         if(data.quantity === isProductExist[0].stock){
             // Alert max stock
             dispatch(updateAlertMessage({
@@ -70,18 +55,13 @@ const CartList = () => {
             }))
             return false;
         }else{
-            // Update product cart
-            axios.put(`http://localhost:8000/api/carts/${data.id}`, {quantity:data.quantity + 1})
-            .then((res) => {
-                axios.get(`http://localhost:8000/api/cart-users/${user.id}`)
-                .then((response) => {
-                    dispatch(updateCarts(response.data.carts));
-                })
-                history.push('/');
-            })
-            .catch((error) => {
-                console.log(error.response.data)
-            })
+            // Update db cart
+            await updateCart({quantity:data.quantity + 1}, data.id)
+
+            // Update cart
+            const cartUser = await getCartUser(user.id);
+            dispatch(updateCarts(cartUser));
+            history.push('/');
         }
     }
 
