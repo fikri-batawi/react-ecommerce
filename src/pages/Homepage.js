@@ -11,11 +11,8 @@ import UpdatePassword from '../components/user/UpdatePassword';
 import CartList from '../components/user/CartList';
 
 function Homepage() {
-    // Router
-    const history = useHistory();
-    // Token
     const token = localStorage.getItem("token");
-    // Redux
+    const history = useHistory();
     const dispatch = useDispatch();
     const user = useSelector(state => state.user.value);
     const products = useSelector(state => state.products.value);

@@ -1,6 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 const CartDetail = () => {
     // Redux

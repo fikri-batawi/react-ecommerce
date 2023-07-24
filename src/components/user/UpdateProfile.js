@@ -6,9 +6,7 @@ import { updateUser } from '../../redux/reducers/user';
 import { updateAlertMessage } from '../../redux/reducers/alertMessage';
     
 const UpdateProfile = () => {
-    // Router
     const history = useHistory();
-    // Redux
     const dispatch = useDispatch();
     const user = useSelector(state => state.user.value);
 

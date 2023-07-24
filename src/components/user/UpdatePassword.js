@@ -6,11 +6,7 @@ import { updateUser } from '../../redux/reducers/user';
 import { updateAlertMessage } from '../../redux/reducers/alertMessage';
 
 const UpdatePassword = () => {
-    // Router
     const history = useHistory();
-    // Token
-    const token = localStorage.getItem("token");
-    // Redux
     const dispatch = useDispatch();
     const user = useSelector(state => state.user.value);
 
